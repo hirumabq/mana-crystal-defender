@@ -1,0 +1,219 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0f172a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --color-fire: #ef4444;
+  --color-ice: #3b82f6;
+  --color-thunder: #eab308;
+  --glass-bg: rgba(30, 41, 59, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
+    radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.1), transparent 40%);
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.title-display {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Scrollbar styling for panels */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* 
+  Visual Overhaul Animations 
+*/
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.95);
+    box-shadow: 0 0 10px currentColor;
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px currentColor;
+  }
+
+  100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+    box-shadow: 0 0 10px currentColor;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes energyFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes hitFlash {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 5px currentColor);
+  }
+
+  50% {
+    filter: brightness(2.5) drop-shadow(0 0 25px white);
+  }
+
+  100% {
+    filter: brightness(1) drop-shadow(0 0 5px currentColor);
+  }
+}
+
+/* Tower Base & Core */
+.tower-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tower-core {
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.tower-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px dashed currentColor;
+  opacity: 0.5;
+  animation: spin 8s linear infinite;
+}
+
+.tower-ring-reverse {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px dotted currentColor;
+  opacity: 0.3;
+  animation: spin 12s linear infinite reverse;
+}
+
+/* Path SVG Styling */
+.path-trench {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 40;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.path-core {
+  stroke: rgba(139, 92, 246, 0.6);
+  stroke-width: 20;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.8));
+}
+
+.path-energy {
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 6;
+  stroke-dasharray: 10 30;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  animation: dashFlow 1s linear infinite;
+}
+
+/* Enemy Styling */
+.enemy-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 15px currentColor;
+  position: relative;
+  overflow: hidden;
+}
+
+.enemy-core::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
