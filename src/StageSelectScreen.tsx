@@ -10,7 +10,7 @@ export default function StageSelectScreen({ onSelect, onBack }: { onSelect: (ind
 
     return (
         <div style={{
-            width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column',
+            width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column',
             background: `radial-gradient(circle at center, rgb(30, 27, 75), rgb(2, 6, 23))`,
             color: 'white'
         }}>

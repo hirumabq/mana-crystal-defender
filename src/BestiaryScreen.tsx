@@ -41,7 +41,7 @@ export default function BestiaryScreen({ onBack }: BestiaryScreenProps) {
             transition={{ duration: 0.5 }}
             style={{
                 width: '100vw',
-                height: '100vh',
+                height: '100dvh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -49,12 +49,12 @@ export default function BestiaryScreen({ onBack }: BestiaryScreenProps) {
                 position: 'relative',
                 color: 'white',
             }}
+            className="screen-padding"
         >
-            <div className="glass-panel" style={{
-                width: '80%',
+            <div className="glass-panel screen-padding" style={{
+                width: '100%',
                 maxWidth: '600px',
-                maxHeight: '80vh',
-                padding: '40px',
+                maxHeight: '90vh',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '24px',
@@ -78,7 +78,7 @@ export default function BestiaryScreen({ onBack }: BestiaryScreenProps) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {enemies.map((enemy) => (
-                        <div key={enemy.id} style={{
+                        <div key={enemy.id} className="upgrade-item" style={{
                             display: 'flex',
                             gap: '24px',
                             padding: '24px',

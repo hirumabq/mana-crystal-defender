@@ -21,7 +21,7 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
             transition={{ duration: 0.8 }}
             style={{
                 width: '100vw',
-                height: '100vh',
+                height: '100dvh',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -66,7 +66,7 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                 animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }}
                 transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
-                    position: 'absolute', width: '100vw', height: '100vh',
+                    position: 'absolute', width: '100vw', height: '100dvh',
                     background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 60%)',
                     pointerEvents: 'none',
                 }}

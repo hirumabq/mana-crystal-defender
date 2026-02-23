@@ -32,6 +32,10 @@ body {
   background-image:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
     radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.1), transparent 40%);
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 * {
@@ -66,6 +70,79 @@ body {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .title-display {
+    font-size: 2rem !important;
+  }
+
+  .glass-panel {
+    padding: 12px !important;
+    border-radius: var(--radius-sm);
+  }
+
+  .screen-padding {
+    padding: 16px !important;
+  }
+
+  .upgrade-item {
+    flex-direction: column !important;
+    text-align: center;
+    gap: 12px !important;
+    align-items: center;
+  }
+
+  .upgrade-item-btn {
+    width: 100%;
+  }
+
+  .upgrade-item-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .upgrade-item h2 {
+    justify-content: center;
+  }
+
+  .deck-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .game-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin: 8px !important;
+    padding: 12px 14px !important;
+  }
+
+  .game-header-top {
+    justify-content: space-between !important;
+    width: 100%;
+  }
+
+  .game-header-stats {
+    justify-content: center !important;
+    width: 100%;
+  }
 }
 
 @keyframes dashFlow {

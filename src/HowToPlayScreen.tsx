@@ -17,8 +17,8 @@ export default function HowToPlayScreen({ onBack }: HowToPlayScreenProps) {
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
             style={{
-                width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column',
-                background: '#020617', color: 'white', padding: '24px', overflowY: 'auto'
+                width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column',
+                background: '#020617', color: 'white', overflowY: 'auto'
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>

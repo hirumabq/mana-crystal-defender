@@ -79,30 +79,30 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
 
   return (
     <div style={{
-      width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column',
+      width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column',
       background: `radial-gradient(circle at center, rgb(30, 27, 75), rgb(2, 6, 23))`,
     }}>
 
       {/* HEADER HUD */}
-      <header className="glass-panel" style={{
+      <header className="glass-panel game-header" style={{
         margin: '16px', padding: '12px 20px', display: 'flex', justifyContent: 'space-between',
         alignItems: 'center', zIndex: 10
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b5cf6' }}>
+        <div className="game-header-top" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b5cf6', flexShrink: 0 }}>
           <button onClick={onBack} title="Back to Title" style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}>
             <X size={24} />
           </button>
-          <Gem size={28} style={{ marginLeft: '8px' }} />
+          <Gem size={24} style={{ marginLeft: '4px' }} className="hide-on-mobile" />
           <span className="title-display" style={{ fontSize: '1.2rem', fontWeight: 800 }}>{t('manaCrystal')}</span>
 
-          <button onClick={() => setIsMuted(toggleMuted())} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', marginLeft: '16px', display: 'flex', alignItems: 'center' }}>
+          <button onClick={() => setIsMuted(toggleMuted())} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '16px', fontWeight: 600 }}>
+        <div className="game-header-stats" style={{ display: 'flex', gap: '12px', fontWeight: 600, flexWrap: 'wrap', justifyContent: 'flex-end', fontSize: '0.9rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#eab308' }}>
-            <Coins size={18} /> {gameState.mana}
+            <Coins size={16} /> {gameState.mana}
           </div>
           {saveDataRef.current.upgrades.unlockedSP > 0 && (
             <div title="Skill Points" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#38bdf8' }}>
@@ -110,44 +110,53 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981' }}>
-            <ShieldCheck size={18} /> {gameState.crystalHp}
+            <ShieldCheck size={16} /> {gameState.crystalHp}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)', padding: '2px 8px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)', padding: '2px 6px', borderRadius: '12px', fontSize: '0.8rem' }}>
             {t('enemies')}: {gameState.isPlaying ? `${gameState.remainingEnemies} / ${gameState.totalEnemies}` : gameState.totalEnemies}
           </div>
         </div>
       </header>
 
       {/* TOWER SELECTOR */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', padding: '0 16px', zIndex: 10 }}>
-        {(saveDataRef.current.customDecks[saveDataRef.current.activeDeckIndex]?.towers as TowerType[] || []).map(type => {
-          const Icon = TOWER_INFO[type].icon;
-          return (
-            <button
-              key={type}
-              onClick={() => setSelectedType(type)}
-              className="glass-panel"
-              style={{
-                flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
-                color: 'white', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
-                background: selectedType === type ? 'rgba(255,255,255,0.1)' : 'var(--glass-bg)',
-                boxShadow: selectedType === type ? `0 0 15px ${TOWER_INFO[type].color}55` : 'none',
-                borderBottom: `4px solid ${selectedType === type ? TOWER_INFO[type].color : 'transparent'}`,
-                transition: 'all 0.2s ease',
-                borderRadius: 'var(--radius-sm)'
-              }}
-            >
-              <Icon size={20} color={TOWER_INFO[type].color} /> {t(type)}
-            </button>
-          )
-        })}
+      <div className="hide-scrollbar" style={{ display: 'flex', gap: '12px', padding: '0 16px', zIndex: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {(saveDataRef.current.customDecks[saveDataRef.current.activeDeckIndex]?.towers as TowerType[] || [])
+          .filter(type => {
+            if (['fire', 'ice', 'thunder'].includes(type)) return true;
+            const key = `unlocked${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            return (saveDataRef.current.upgrades as any)[key] > 0;
+          })
+          .map(type => {
+            const Icon = TOWER_INFO[type].icon;
+            return (
+              <button
+                key={type}
+                onClick={() => setSelectedType(type)}
+                className="glass-panel"
+                style={{
+                  flex: '0 0 auto', padding: '10px', border: 'none', cursor: 'pointer',
+                  color: 'white', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center',
+                  background: selectedType === type ? 'rgba(255,255,255,0.1)' : 'var(--glass-bg)',
+                  boxShadow: selectedType === type ? `0 0 15px ${TOWER_INFO[type].color}55` : 'none',
+                  borderBottom: `4px solid ${selectedType === type ? TOWER_INFO[type].color : 'transparent'}`,
+                  transition: 'all 0.2s ease',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.9rem',
+                  minWidth: '80px'
+                }}
+              >
+                <Icon size={20} color={TOWER_INFO[type].color} /> {t(type)}
+              </button>
+            )
+          })}
       </div>
 
       {/* GAME BOARD BATTLEFIELD */}
       <div style={{
-        flex: 1, position: 'relative', margin: '16px', borderRadius: 'var(--radius-lg)',
+        flex: 1, position: 'relative', margin: '8px 16px', borderRadius: 'var(--radius-lg)',
         overflow: 'hidden', border: '2px solid rgba(139, 92, 246, 0.2)',
-        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)'
+        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
+        minHeight: '200px'
       }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -576,88 +585,96 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
       </div>
 
       {/* SKILL BAR */}
-      <div style={{ padding: '0 16px', display: 'flex', gap: '16px', zIndex: 10, marginBottom: '8px' }}>
-        {saveDataRef.current.upgrades.unlockedSP > 0 && (saveDataRef.current.customDecks[saveDataRef.current.activeDeckIndex]?.skills as ActiveSkillType[] || []).map(skill => {
+      <div className="hide-scrollbar" style={{ padding: '0 16px', display: 'flex', gap: '12px', zIndex: 10, marginBottom: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {saveDataRef.current.upgrades.unlockedSP > 0 && (saveDataRef.current.customDecks[saveDataRef.current.activeDeckIndex]?.skills as ActiveSkillType[] || [])
+          .filter(skill => {
+            if (skill === 'meteor') return saveDataRef.current.upgrades.unlockedSP > 0;
+            if (skill === 'freeze') return saveDataRef.current.upgrades.unlockedFreeze > 0;
+            if (skill === 'storm') return saveDataRef.current.upgrades.unlockedStorm > 0;
+            const key = `unlocked${skill.charAt(0).toUpperCase() + skill.slice(1)}`;
+            return (saveDataRef.current.upgrades as any)[key] > 0;
+          })
+          .map(skill => {
+            const cd = skillCooldownsRef.current[skill];
 
-          const cd = skillCooldownsRef.current[skill];
+            const costs: Record<string, number> = {
+              meteor: 100, freeze: 150, storm: 200,
+              heal: 100, haste: 150, empower: 150, poisonCloud: 200,
+              blackhole: 250, goldRush: 150, shockwave: 200,
+              barrier: 150, armageddon: 300, timeWarp: 250
+            };
+            const cooldowns: Record<string, number> = {
+              meteor: 30000, freeze: 45000, storm: 45000,
+              heal: 30000, haste: 45000, empower: 45000, poisonCloud: 45000,
+              blackhole: 60000, goldRush: 45000, shockwave: 45000,
+              barrier: 30000, armageddon: 90000, timeWarp: 60000
+            };
 
-          const costs: Record<string, number> = {
-            meteor: 100, freeze: 150, storm: 200,
-            heal: 100, haste: 150, empower: 150, poisonCloud: 200,
-            blackhole: 250, goldRush: 150, shockwave: 200,
-            barrier: 150, armageddon: 300, timeWarp: 250
-          };
-          const cooldowns: Record<string, number> = {
-            meteor: 30000, freeze: 45000, storm: 45000,
-            heal: 30000, haste: 45000, empower: 45000, poisonCloud: 45000,
-            blackhole: 60000, goldRush: 45000, shockwave: 45000,
-            barrier: 30000, armageddon: 90000, timeWarp: 60000
-          };
+            const maxCd = cooldowns[skill] || 45000;
+            const cost = costs[skill] || 150;
+            const isReady = cd <= 0;
+            const canAfford = gameState.sp >= cost;
+            const SkillIcon = SKILL_INFO[skill].icon;
 
-          const maxCd = cooldowns[skill] || 45000;
-          const cost = costs[skill] || 150;
-          const isReady = cd <= 0;
-          const canAfford = gameState.sp >= cost;
-          const SkillIcon = SKILL_INFO[skill].icon;
+            const handleSkillClick = () => {
+              if (!isReady || !canAfford) return;
+              if (skill === 'meteor') {
+                setSelectedSkill(prev => prev === 'meteor' ? null : 'meteor');
+              } else {
+                useSkill(skill);
+              }
+            };
 
-          const handleSkillClick = () => {
-            if (!isReady || !canAfford) return;
-            if (skill === 'meteor') {
-              setSelectedSkill(prev => prev === 'meteor' ? null : 'meteor');
-            } else {
-              useSkill(skill);
-            }
-          };
-
-          return (
-            <div key={skill} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-              <button
-                onClick={handleSkillClick}
-                title={t(skill)}
-                className="glass-panel"
-                style={{
-                  width: '50px', height: '50px', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `2px solid ${selectedSkill === skill ? '#ef4444' : (isReady && canAfford ? '#3b82f6' : '#475569')}`,
-                  background: isReady ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.8)',
-                  color: isReady && canAfford ? 'white' : '#64748b',
-                  cursor: isReady && canAfford ? 'pointer' : 'not-allowed',
-                  position: 'relative', overflow: 'hidden', padding: 0
-                }}
-              >
-                {!isReady && (
-                  <>
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, width: '100%',
-                      height: `${(cd / maxCd) * 100}%`,
-                      background: 'rgba(239, 68, 68, 0.4)', zIndex: 1
-                    }} />
-                    <div style={{
-                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'rgba(0,0,0,0.6)', zIndex: 2,
-                      color: 'white', fontWeight: 'bold', fontSize: '1rem',
-                      textShadow: '0 0 4px black'
-                    }}>
-                      {Math.ceil(cd / 1000)}s
-                    </div>
-                  </>
-                )}
-                <div style={{ zIndex: 1, opacity: isReady ? 1 : 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <SkillIcon size={24} color={SKILL_INFO[skill].color} />
+            return (
+              <div key={skill} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                <button
+                  onClick={handleSkillClick}
+                  title={t(skill)}
+                  className="glass-panel"
+                  style={{
+                    flex: '0 0 auto',
+                    width: '46px', height: '46px', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: `2px solid ${selectedSkill === skill ? '#ef4444' : (isReady && canAfford ? '#3b82f6' : '#475569')}`,
+                    background: isReady ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.8)',
+                    color: isReady && canAfford ? 'white' : '#64748b',
+                    cursor: isReady && canAfford ? 'pointer' : 'not-allowed',
+                    position: 'relative', overflow: 'hidden', padding: 0
+                  }}
+                >
+                  {!isReady && (
+                    <>
+                      <div style={{
+                        position: 'absolute', bottom: 0, left: 0, width: '100%',
+                        height: `${(cd / maxCd) * 100}%`,
+                        background: 'rgba(239, 68, 68, 0.4)', zIndex: 1
+                      }} />
+                      <div style={{
+                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(0,0,0,0.6)', zIndex: 2,
+                        color: 'white', fontWeight: 'bold', fontSize: '1rem',
+                        textShadow: '0 0 4px black'
+                      }}>
+                        {Math.ceil(cd / 1000)}s
+                      </div>
+                    </>
+                  )}
+                  <div style={{ zIndex: 1, opacity: isReady ? 1 : 0.3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <SkillIcon size={24} color={SKILL_INFO[skill].color} />
+                  </div>
+                </button>
+                <div style={{ background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: canAfford ? '#38bdf8' : '#ef4444', fontWeight: 'bold' }}>
+                  {cost} SP
                 </div>
-              </button>
-              <div style={{ background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: canAfford ? '#38bdf8' : '#ef4444', fontWeight: 'bold' }}>
-                {cost} SP
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
       </div>
 
       {/* FOOTER CONTROLS */}
       <footer className="glass-panel" style={{
-        margin: '16px', padding: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center',
+        margin: '8px 16px 16px 16px', padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 10
       }}>
         {!gameState.isPlaying ? (
@@ -671,41 +688,41 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
             <Play fill="white" /> {t('summonWave', gameState.wave + 1, gameState.totalEnemies)}
           </button>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', width: '100%', maxWidth: '600px' }}>
+            <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'center' }}>
               <button onClick={() => setGameSpeed(0)} style={{
-                padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+                flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
                 background: gameSpeed === 0 ? '#ef4444' : 'rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontWeight: 'bold', fontSize: '0.85rem'
               }}>
-                <Pause size={16} /> {t('pause')}
+                <Pause size={14} /> {t('pause')}
               </button>
               <button onClick={() => setGameSpeed(1)} style={{
-                padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+                flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
                 background: gameSpeed === 1 ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontWeight: 'bold', fontSize: '0.85rem'
               }}>
-                <Play size={16} /> {t('speed1x')}
+                <Play size={14} /> 1x
               </button>
               <button onClick={() => setGameSpeed(2)} style={{
-                padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+                flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
                 background: gameSpeed === 2 ? '#8b5cf6' : 'rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontWeight: 'bold', fontSize: '0.85rem'
               }}>
-                <FastForward size={16} /> {t('speed2x')}
+                <FastForward size={14} /> 2x
               </button>
               <button onClick={() => setGameSpeed(3)} style={{
-                padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+                flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
                 background: gameSpeed === 3 ? '#ec4899' : 'rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 'bold'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontWeight: 'bold', fontSize: '0.85rem'
               }}>
-                <FastForward size={16} fill="white" /> {t('speed3x')}
+                <FastForward size={14} fill="white" /> 3x
               </button>
             </div>
 
-            <div style={{ color: 'white', fontWeight: 600, fontSize: '1.2rem', textAlign: 'right' }}>
+            <div style={{ color: 'white', fontWeight: 600, fontSize: '1rem', textAlign: 'center' }}>
               {t('defendingWave', gameState.wave)} {t('remaining', enemies.length)}
-              {gameState.wave % 5 === 0 && <span style={{ display: 'block', fontSize: '0.9rem', color: '#ef4444' }}>{t('bossWarning')}</span>}
+              {gameState.wave % 5 === 0 && <span style={{ marginLeft: '8px', fontSize: '0.9rem', color: '#ef4444' }}>{t('bossWarning')}</span>}
             </div>
           </div>
         )}
@@ -720,7 +737,7 @@ function MainApp() {
   const [stageIndex, setStageIndex] = useState(0);
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100vw', height: '100dvh', overflow: 'hidden' }}>
       <AnimatePresence mode="wait">
         {view === 'title' ? (
           <TitleScreen key="title" onStart={() => setView('stage-select')} onHowToPlay={() => setView('how-to-play')} onUpgrades={() => setView('upgrades')} onBestiary={() => setView('bestiary')} onDeck={() => setView('deck')} />

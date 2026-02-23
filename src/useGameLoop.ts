@@ -495,6 +495,11 @@ export function useGameLoop(stageIndex: number = 0) {
                 if ((end || win) && !prev.isGameOver && !prev.isVictory) {
                     const currentSave = loadSaveData();
                     currentSave.points += prev.sessionPoints + earnedPoints;
+
+                    if (win && stageIndex === currentSave.unlockedStages - 1) {
+                        currentSave.unlockedStages = Math.min(3, currentSave.unlockedStages + 1);
+                    }
+
                     saveGameData(currentSave);
                 }
 

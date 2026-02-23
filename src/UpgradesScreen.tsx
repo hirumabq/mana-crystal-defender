@@ -59,7 +59,10 @@ export default function UpgradesScreen({ onBack }: UpgradesScreenProps) {
     const handleUpgrade = (id: keyof SaveData['upgrades'], cost: number) => {
         if (!saveData || saveData.points < cost) return;
 
-        const newData = { ...saveData };
+        const newData = {
+            ...saveData,
+            upgrades: { ...saveData.upgrades }
+        };
         newData.points -= cost;
         newData.upgrades[id] += 1;
 
@@ -77,10 +80,11 @@ export default function UpgradesScreen({ onBack }: UpgradesScreenProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
             style={{
-                width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column',
+                width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column',
                 background: 'radial-gradient(circle at center, #1e1b4b, #020617)',
-                color: 'white', padding: '24px', overflowY: 'auto'
+                color: 'white', overflowY: 'auto'
             }}
+            className="screen-padding"
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <button
@@ -129,14 +133,14 @@ export default function UpgradesScreen({ onBack }: UpgradesScreenProps) {
                         const Icon = ug.icon;
 
                         return (
-                            <div key={ug.id} className="glass-panel" style={{
+                            <div key={ug.id} className="glass-panel upgrade-item" style={{
                                 padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 borderLeft: `4px solid ${isLocked ? '#475569' : ug.color}`,
                                 opacity: isLocked ? 0.5 : 1, filter: isLocked ? 'grayscale(100%)' : 'none',
                                 transition: 'all 0.3s'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '50%', color: isLocked ? '#94a3b8' : ug.color }}>
+                                <div className="upgrade-item-header" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '50%', color: isLocked ? '#94a3b8' : ug.color, flexShrink: 0 }}>
                                         {isLocked ? <Lock size={32} /> : <Icon size={32} />}
                                     </div>
                                     <div>
@@ -151,6 +155,7 @@ export default function UpgradesScreen({ onBack }: UpgradesScreenProps) {
                                 <button
                                     onClick={() => handleUpgrade(ug.id as keyof SaveData['upgrades'], cost)}
                                     disabled={!canAfford || isMaxLevel || isLocked}
+                                    className="upgrade-item-btn"
                                     style={{
                                         padding: '12px 24px', fontSize: '1.2rem', fontWeight: 'bold',
                                         background: isMaxLevel ? '#10b981' : (canAfford ? ug.color : '#374151'),

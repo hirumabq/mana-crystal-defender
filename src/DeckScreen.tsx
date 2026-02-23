@@ -57,9 +57,6 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
 
     if (!saveData) return null;
 
-    const currentDeck = saveData.customDecks[activeDeckIndex];
-    const selectedTowers = currentDeck.towers;
-    const selectedSkills = currentDeck.skills;
     const upgrades = saveData.upgrades;
 
     const isTowerUnlocked = (id: string) => {
@@ -76,16 +73,32 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
         return (upgrades[key] as number) > 0;
     };
 
+    const selectedTowers = (saveData?.customDecks[activeDeckIndex]?.towers || []).filter(isTowerUnlocked);
+    const selectedSkills = (saveData?.customDecks[activeDeckIndex]?.skills || []).filter(isSkillUnlocked);
+
     const toggleTower = (id: string) => {
         setSaveData(prev => {
             if (!prev) return prev;
+
+            const checkUnlocked = (tId: string) => {
+                if (['fire', 'ice', 'thunder'].includes(tId)) return true;
+                const key = `unlocked${tId.charAt(0).toUpperCase() + tId.slice(1)}` as keyof typeof prev.upgrades;
+                return (prev.upgrades[key] as number) > 0;
+            };
+
             const next = { ...prev };
+            // Deep clone the array to prevent mutating the original state
+            next.customDecks = [...prev.customDecks];
             const deck = { ...next.customDecks[activeDeckIndex] };
-            if (deck.towers.includes(id)) {
-                deck.towers = deck.towers.filter(t => t !== id);
-            } else if (deck.towers.length < 5) {
-                deck.towers = [...deck.towers, id];
+
+            let currentTowers = deck.towers.filter(checkUnlocked);
+
+            if (currentTowers.includes(id)) {
+                currentTowers = currentTowers.filter(t => t !== id);
+            } else if (currentTowers.length < 5) {
+                currentTowers = [...currentTowers, id];
             }
+            deck.towers = currentTowers;
             next.customDecks[activeDeckIndex] = deck;
             return next;
         });
@@ -94,48 +107,68 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
     const toggleSkill = (id: string) => {
         setSaveData(prev => {
             if (!prev) return prev;
+
+            const checkUnlocked = (sId: string) => {
+                if (sId === 'meteor') return prev.upgrades.unlockedSP > 0;
+                if (sId === 'freeze') return prev.upgrades.unlockedFreeze > 0;
+                if (sId === 'storm') return prev.upgrades.unlockedStorm > 0;
+                const key = `unlocked${sId.charAt(0).toUpperCase() + sId.slice(1)}` as keyof typeof prev.upgrades;
+                return (prev.upgrades[key] as number) > 0;
+            };
+
             const next = { ...prev };
+            next.customDecks = [...prev.customDecks];
             const deck = { ...next.customDecks[activeDeckIndex] };
-            if (deck.skills.includes(id)) {
-                deck.skills = deck.skills.filter(s => s !== id);
-            } else if (deck.skills.length < 3) {
-                deck.skills = [...deck.skills, id];
+
+            let currentSkills = deck.skills.filter(checkUnlocked);
+
+            if (currentSkills.includes(id)) {
+                currentSkills = currentSkills.filter(s => s !== id);
+            } else if (currentSkills.length < 3) {
+                currentSkills = [...currentSkills, id];
             }
+            deck.skills = currentSkills;
             next.customDecks[activeDeckIndex] = deck;
             return next;
         });
     };
 
+    const visibleTowers = BASE_TOWERS.filter(t => isTowerUnlocked(t.id));
+    const visibleSkills = BASE_SKILLS.filter(s => isSkillUnlocked(s.id));
+
+    const canSave = selectedTowers.length > 0;
+
     const handleSave = () => {
-        if (selectedTowers.length !== 5 || selectedSkills.length !== 3) return;
+        if (!canSave) return;
         const nextSave = { ...saveData, activeDeckIndex };
+        const deck = { ...nextSave.customDecks[activeDeckIndex] };
+        deck.towers = selectedTowers;
+        deck.skills = selectedSkills;
+        nextSave.customDecks[activeDeckIndex] = deck;
         saveGameData(nextSave);
         onBack();
     };
 
-    const visibleTowers = BASE_TOWERS.filter(t => isTowerUnlocked(t.id));
-    const visibleSkills = BASE_SKILLS.filter(s => isSkillUnlocked(s.id));
-
     return (
-        <div style={{
-            minHeight: '100vh', padding: '40px', background: '#0f172a', color: 'white',
+        <div className="screen-padding" style={{
+            minHeight: '100vh', background: '#0f172a', color: 'white',
             display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto'
         }}>
-            <h1 className="title-display" style={{ color: '#8b5cf6', margin: '0 0 20px 0', fontSize: '3rem', textShadow: '0 0 20px #8b5cf6' }}>
+            <h1 className="title-display" style={{ color: '#8b5cf6', margin: '0 0 20px 0', textShadow: '0 0 20px #8b5cf6' }}>
                 {t('deckBuilding' as any)}
             </h1>
 
             {/* Deck Slots */}
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap', justifyContent: 'center' }}>
                 {[0, 1, 2].map(idx => (
                     <button
                         key={idx}
                         onClick={() => setActiveDeckIndex(idx)}
                         style={{
-                            padding: '12px 24px', borderRadius: '8px', cursor: 'pointer',
+                            padding: '10px 20px', borderRadius: '8px', cursor: 'pointer',
                             background: activeDeckIndex === idx ? '#8b5cf6' : 'rgba(139, 92, 246, 0.2)',
                             border: `2px solid ${activeDeckIndex === idx ? '#c4b5fd' : 'rgba(139,92,246,0.3)'}`,
-                            color: 'white', fontWeight: 'bold', fontSize: '1.2rem',
+                            color: 'white', fontWeight: 'bold', fontSize: '1.1rem',
                             boxShadow: activeDeckIndex === idx ? '0 0 15px rgba(139,92,246,0.5)' : 'none'
                         }}
                     >
@@ -179,7 +212,7 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
                             {t('deckTowers' as any, selectedTowers.length)}
                             {selectedTowers.length === 5 && <Check color="#10b981" />}
                         </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                        <div className="deck-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                             {visibleTowers.map(tower => {
                                 const isSelected = selectedTowers.includes(tower.id);
                                 const Icon = tower.icon;
@@ -217,7 +250,7 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
                             {t('deckSkills' as any, selectedSkills.length)}
                             {selectedSkills.length === 3 && <Check color="#10b981" />}
                         </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                        <div className="deck-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                             {visibleSkills.length === 0 && (
                                 <div style={{ color: '#94a3b8' }}>No skills unlocked yet.</div>
                             )}
@@ -253,24 +286,24 @@ export const DeckScreen: React.FC<DeckScreenProps> = ({ onBack }) => {
 
             </div>
 
-            <div style={{ display: 'flex', gap: '16px', marginTop: '40px', paddingBottom: '40px' }}>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '40px', paddingBottom: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <button onClick={onBack} style={{
                     padding: '12px 24px', borderRadius: '8px', background: 'transparent',
                     border: '1px solid rgba(255,255,255,0.2)', color: 'white',
                     fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
                 }}>
-                    <ArrowLeft size={20} /> {t('back')}
+                    <ArrowLeft size={20} /> <span className="hide-on-mobile">{t('back')}</span>
                 </button>
                 <button
                     onClick={handleSave}
-                    disabled={selectedTowers.length !== 5 || (selectedSkills.length !== 3 && visibleSkills.length >= 3)}
+                    disabled={!canSave}
                     style={{
-                        padding: '12px 32px', borderRadius: '8px',
-                        background: (selectedTowers.length === 5 && (selectedSkills.length === 3 || visibleSkills.length < 3)) ? '#8b5cf6' : 'rgba(139, 92, 246, 0.3)',
+                        padding: '12px 24px', borderRadius: '8px',
+                        background: canSave ? '#8b5cf6' : 'rgba(139, 92, 246, 0.3)',
                         border: 'none', color: 'white', fontWeight: 'bold',
-                        fontSize: '1.2rem', cursor: (selectedTowers.length === 5 && (selectedSkills.length === 3 || visibleSkills.length < 3)) ? 'pointer' : 'not-allowed',
+                        fontSize: '1.2rem', cursor: canSave ? 'pointer' : 'not-allowed',
                         display: 'flex', alignItems: 'center', gap: '8px',
-                        boxShadow: (selectedTowers.length === 5 && (selectedSkills.length === 3 || visibleSkills.length < 3)) ? '0 0 20px rgba(139, 92, 246, 0.6)' : 'none'
+                        boxShadow: canSave ? '0 0 20px rgba(139, 92, 246, 0.6)' : 'none'
                     }}
                 >
                     <Check size={20} /> {t('saveDeck' as any)}
