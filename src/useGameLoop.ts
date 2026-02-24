@@ -14,6 +14,23 @@ export type Debuff = {
 
 export type TargetPriority = 'first' | 'last' | 'strongest' | 'weakest';
 
+export type WaveRewardType = 'heal_crystal' | 'max_hp_crystal' | 'coin_boost' | 'income_boost' | 'tower_damage' | 'tower_speed' | 'next_wave_damage_boost' | 'next_wave_range_boost' | 'sp_boost';
+
+export type WaveReward = {
+    id: string;
+    type: WaveRewardType;
+    value: number;
+    descriptionKey: string; // Used for translation
+};
+
+export type GlobalBuffs = {
+    bonusCoinPerWave: number;
+    towerDamageMultiplier: number;
+    towerSpeedMultiplier: number;
+    towerRangeMultiplier: number;
+    nextWaveDamageMultiplier: number;
+    nextWaveRangeMultiplier: number;
+};
 export type Enemy = {
     id: string;
     type: EnemyType;
@@ -143,6 +160,15 @@ export function useGameLoop(stageIndex: number = 0) {
     const [towers, setTowers] = useState<Tower[]>([]);
     const [attackEffects, setAttackEffects] = useState<AttackEffect[]>([]);
     const [gameSpeed, setGameSpeed] = useState<number>(1);
+    const [waveRewards, setWaveRewards] = useState<WaveReward[] | null>(null);
+    const [globalBuffs, setGlobalBuffs] = useState<GlobalBuffs>({
+        bonusCoinPerWave: 0,
+        towerDamageMultiplier: 1,
+        towerSpeedMultiplier: 1,
+        towerRangeMultiplier: 1,
+        nextWaveDamageMultiplier: 1,
+        nextWaveRangeMultiplier: 1
+    });
 
     const requestRef = useRef<number>(0);
     const lastTimeRef = useRef<number>(0);
@@ -186,7 +212,7 @@ export function useGameLoop(stageIndex: number = 0) {
             }
         }
 
-        if (!gameState.isPlaying || gameState.isGameOver || gameState.isVictory) {
+        if (!gameState.isPlaying || gameState.isGameOver || gameState.isVictory || waveRewards) {
             requestRef.current = requestAnimationFrame(tick);
             return;
         }
@@ -481,7 +507,8 @@ export function useGameLoop(stageIndex: number = 0) {
         // Frame updates
         setEnemies(updatedEnemies);
 
-        let waveEnded = !waveSpawningRef.current && updatedEnemies.length === 0;
+        let waveEnded = !waveSpawningRef.current && updatedEnemies.length === 0 && towersRef.current.length > 0; // Don't end wave if no towers placed initially (game not really started)
+        if (gameState.wave === 0) waveEnded = false;
 
         if (hpLost > 0 || earnedMana > 0 || currentEarnedSp > 0 || waveEnded) {
             if (waveEnded) {
@@ -514,10 +541,46 @@ export function useGameLoop(stageIndex: number = 0) {
                     isVictory: win
                 };
             });
+
+            if (waveEnded && !gameState.isGameOver && !gameState.isVictory && gameState.wave < 10 && !waveRewards) {
+                // Generate Wave Rewards
+                const rewardOptions: WaveRewardType[] = [
+                    'heal_crystal', 'max_hp_crystal', 'coin_boost', 'income_boost',
+                    'tower_damage', 'tower_speed', 'next_wave_damage_boost', 'next_wave_range_boost', 'sp_boost'
+                ];
+
+                // Shuffle and pick 3
+                for (let i = rewardOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [rewardOptions[i], rewardOptions[j]] = [rewardOptions[j], rewardOptions[i]];
+                }
+
+                const selectedOptions = rewardOptions.slice(0, 3).map(type => {
+                    let val = 0;
+                    if (type === 'heal_crystal') val = 30; // 30% or flat 30 hp
+                    if (type === 'max_hp_crystal') val = 10;
+                    if (type === 'coin_boost') val = 150 + (gameState.wave * 10);
+                    if (type === 'income_boost') val = 50;
+                    if (type === 'tower_damage') val = 0.1; // +10%
+                    if (type === 'tower_speed') val = 0.1; // +10%
+                    if (type === 'next_wave_damage_boost') val = 2.0; // 2x
+                    if (type === 'next_wave_range_boost') val = 1.5; // 1.5x
+                    if (type === 'sp_boost') val = 100;
+
+                    return {
+                        id: uuidv4(),
+                        type,
+                        value: val,
+                        descriptionKey: `reward_desc_${type}`
+                    } as WaveReward;
+                });
+
+                setWaveRewards(selectedOptions);
+            }
         }
 
         requestRef.current = requestAnimationFrame(tick);
-    }, [gameState.isPlaying, gameState.isGameOver, gameState.isVictory, gameState.crystalHp, gameState.wave]);
+    }, [gameState.isPlaying, gameState.isGameOver, gameState.isVictory, gameState.crystalHp, gameState.wave, waveRewards]);
 
     useEffect(() => {
         requestRef.current = requestAnimationFrame(tick);
@@ -531,9 +594,17 @@ export function useGameLoop(stageIndex: number = 0) {
         const isBossWave = nextWave % 5 === 0;
         const enemyCount = isBossWave ? 1 : 10 + (nextWave * 3);
 
+        // Reset temporary next wave buffs when starting a new wave
+        setGlobalBuffs(prev => ({
+            ...prev,
+            nextWaveDamageMultiplier: 1,
+            nextWaveRangeMultiplier: 1
+        }));
+
         setGameState(prev => ({
             ...prev,
             wave: nextWave,
+            mana: prev.mana + globalBuffs.bonusCoinPerWave, // Apply income boost
             isPlaying: true,
             totalEnemies: enemyCount,
             remainingEnemies: enemyCount
@@ -597,6 +668,33 @@ export function useGameLoop(stageIndex: number = 0) {
             lastFire: gameTimeRef.current,
             targeting: 'first'
         }]);
+    };
+
+    const selectReward = (reward: WaveReward) => {
+        if (reward.type === 'heal_crystal') {
+            setGameState(prev => ({ ...prev, crystalHp: prev.crystalHp + reward.value }));
+        } else if (reward.type === 'max_hp_crystal') {
+            setGameState(prev => ({ ...prev, crystalHp: prev.crystalHp + reward.value }));
+            // Note: Currently no maxHp in gameState, treating it as overheal or just a larger heal + max cap increase potentially.
+            // Let's assume crystalHp can go above initial.
+        } else if (reward.type === 'coin_boost') {
+            setGameState(prev => ({ ...prev, mana: prev.mana + reward.value }));
+        } else if (reward.type === 'sp_boost') {
+            setGameState(prev => ({ ...prev, sp: Math.min(prev.maxSp, prev.sp + reward.value) }));
+        }
+
+        setGlobalBuffs(prev => {
+            const next = { ...prev };
+            if (reward.type === 'income_boost') next.bonusCoinPerWave += reward.value;
+            if (reward.type === 'tower_damage') next.towerDamageMultiplier += reward.value;
+            if (reward.type === 'tower_speed') next.towerSpeedMultiplier += reward.value;
+            if (reward.type === 'next_wave_damage_boost') next.nextWaveDamageMultiplier = reward.value;
+            if (reward.type === 'next_wave_range_boost') next.nextWaveRangeMultiplier = reward.value;
+            return next;
+        });
+
+        setWaveRewards(null); // Close rewards screen
+        import('./soundUtils').then(m => m.playSound('uiClick'));
     };
 
     const sellTower = (x: number, y: number) => {
@@ -812,6 +910,9 @@ export function useGameLoop(stageIndex: number = 0) {
         setTowerTargeting,
         useSkill,
         getPointOnPath,
-        saveDataRef
+        saveDataRef,
+        waveRewards,
+        selectReward,
+        globalBuffs
     };
 }

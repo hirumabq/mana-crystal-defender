@@ -23,10 +23,9 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                 width: '100vw',
                 height: '100dvh',
                 display: 'flex',
-                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                background: 'radial-gradient(circle at center, #1e1b4b, #020617)',
+                background: 'radial-gradient(circle at center, #1a0505, #050505)',
                 position: 'relative',
                 overflow: 'hidden',
             }}
@@ -47,27 +46,27 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
 
             {/* Background Magic Elements */}
             <motion.div
-                animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-                transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+                animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+                transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
                 style={{
                     position: 'absolute', width: '80vw', height: '80vw', borderRadius: '50%',
-                    border: '2px solid rgba(59, 130, 246, 0.1)', top: '-20%', left: '-20%',
+                    border: '1px dashed rgba(185, 28, 28, 0.15)', top: '-20%', left: '-20%',
                 }}
             />
             <motion.div
-                animate={{ rotate: -360, scale: [1, 1.5, 1] }}
-                transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+                animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+                transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
                 style={{
                     position: 'absolute', width: '90vw', height: '90vw', borderRadius: '50%',
-                    border: '1px solid rgba(239, 68, 68, 0.05)', bottom: '-30%', right: '-20%',
+                    border: '1px solid rgba(153, 27, 27, 0.1)', bottom: '-30%', right: '-20%',
                 }}
             />
             <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
                     position: 'absolute', width: '100vw', height: '100dvh',
-                    background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 60%)',
+                    background: 'radial-gradient(circle at center, rgba(185, 28, 28, 0.1) 0%, transparent 70%)',
                     pointerEvents: 'none',
                 }}
             />
@@ -82,25 +81,24 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                 <motion.div
                     animate={{
                         textShadow: [
-                            '0 0 10px rgba(59, 130, 246, 0.5)',
-                            '0 0 20px rgba(139, 92, 246, 0.8)',
-                            '0 0 10px rgba(239, 68, 68, 0.5)',
-                            '0 0 10px rgba(59, 130, 246, 0.5)'
+                            '0 0 10px rgba(185, 28, 28, 0.5)',
+                            '0 0 20px rgba(220, 38, 38, 0.8)',
+                            '0 0 10px rgba(153, 27, 27, 0.5)'
                         ]
                     }}
                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                     className="title-display"
                     style={{
-                        fontSize: '3.5rem', fontWeight: 800, color: '#fff', letterSpacing: '2px',
+                        fontSize: '4.5rem', fontWeight: 900, color: '#fff', letterSpacing: '6px',
                         marginBottom: '16px',
-                        background: 'linear-gradient(to right, #3b82f6, #8b5cf6, #ef4444)',
+                        background: 'linear-gradient(to bottom, #fca5a5, #b91c1c, #7f1d1d)',
                         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                        display: 'inline-block'
+                        display: 'inline-block', lineHeight: '1.2'
                     }}
                 >
                     {t('title')}
                 </motion.div>
-                <div style={{ fontSize: '1.2rem', color: 'rgba(255, 255, 255, 0.7)', letterSpacing: '8px', textTransform: 'uppercase' }}>
+                <div className="title-display" style={{ fontSize: '1.2rem', color: '#dc2626', letterSpacing: '12px' }}>
                     {t('subtitle')}
                 </div>
             </motion.div>
@@ -109,17 +107,17 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                 <motion.button
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(139, 92, 246, 0.8)' }}
+                    whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(185, 28, 28, 0.8)' }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ delay: 0.8, duration: 0.4 }}
                     onClick={onStart}
                     className="glass-panel"
                     style={{
                         padding: '16px 48px', fontSize: '1.5rem', fontWeight: 'bold', color: '#fff',
-                        border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '50px', cursor: 'pointer',
+                        border: '1px solid rgba(185, 28, 28, 0.5)', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.4))',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                        background: 'linear-gradient(135deg, rgba(153, 27, 27, 0.6), rgba(69, 10, 10, 0.8))',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
                     }}
                 >
                     <Play size={24} fill="white" />
@@ -130,15 +128,17 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                     <motion.button
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.05)' }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ delay: 1.0, duration: 0.4 }}
                         onClick={onUpgrades}
+                        className="title-display"
                         style={{
                             flex: 1,
-                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#10b981',
-                            border: '1px solid rgba(16, 185, 129, 0.5)', borderRadius: '50px', cursor: 'pointer',
-                            background: 'transparent',
+                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#fbbf24',
+                            border: '1px solid rgba(251, 191, 36, 0.3)', cursor: 'pointer',
+                            background: 'rgba(0,0,0,0.5)',
+                            letterSpacing: '2px'
                         }}
                     >
                         {t('upgrades')}
@@ -147,15 +147,17 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                     <motion.button
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.05)' }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ delay: 1.0, duration: 0.4 }}
                         onClick={onDeck}
+                        className="title-display"
                         style={{
                             flex: 1,
-                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#8b5cf6',
-                            border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '50px', cursor: 'pointer',
-                            background: 'transparent',
+                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#a8a29e',
+                            border: '1px solid rgba(168, 162, 158, 0.3)', cursor: 'pointer',
+                            background: 'rgba(0,0,0,0.5)',
+                            letterSpacing: '2px'
                         }}
                     >
                         {/* @ts-ignore */}
@@ -168,15 +170,17 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                     <motion.button
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.05)' }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ delay: 1.0, duration: 0.4 }}
                         onClick={onHowToPlay}
+                        className="title-display"
                         style={{
                             flex: 1,
-                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.8)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '50px', cursor: 'pointer',
-                            background: 'transparent',
+                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.7)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)', cursor: 'pointer',
+                            background: 'rgba(0,0,0,0.5)',
+                            letterSpacing: '2px'
                         }}
                     >
                         {t('howToPlay')}
@@ -185,15 +189,17 @@ export default function TitleScreen({ onStart, onUpgrades, onHowToPlay, onBestia
                     <motion.button
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.05)' }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ delay: 1.1, duration: 0.4 }}
                         onClick={onBestiary}
+                        className="title-display"
                         style={{
                             flex: 1,
-                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#f59e0b',
-                            border: '1px solid rgba(245, 158, 11, 0.5)', borderRadius: '50px', cursor: 'pointer',
-                            background: 'transparent',
+                            padding: '12px 24px', fontSize: '1rem', fontWeight: 'bold', color: '#f87171',
+                            border: '1px solid rgba(248, 113, 113, 0.3)', cursor: 'pointer',
+                            background: 'rgba(0,0,0,0.5)',
+                            letterSpacing: '2px'
                         }}
                     >
                         {t('bestiary')}

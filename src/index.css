@@ -3,9 +3,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #0f172a;
+  background-color: #050505;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,10 +15,14 @@
   --color-fire: #ef4444;
   --color-ice: #3b82f6;
   --color-thunder: #eab308;
-  --glass-bg: rgba(30, 41, 59, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --radius-lg: 16px;
-  --radius-sm: 8px;
+  --color-blood: #991b1b;
+  --glass-bg: rgba(10, 10, 12, 0.85);
+  /* Darker, grittier */
+  --glass-border: rgba(153, 27, 27, 0.4);
+  /* Faint blood red */
+  --radius-lg: 4px;
+  /* Sharper */
+  --radius-sm: 2px;
 }
 
 body {
@@ -30,8 +34,10 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background-image:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
-    radial-gradient(circle at bottom left, rgba(239, 68, 68, 0.1), transparent 40%);
+    radial-gradient(circle at top right, rgba(153, 27, 27, 0.15), transparent 50%),
+    radial-gradient(circle at bottom left, rgba(67, 20, 7, 0.2), transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-color: #050505;
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -49,13 +55,13 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
 .title-display {
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: 'Cinzel', serif;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
 }
 
 /* Scrollbar styling for panels */
@@ -213,84 +219,84 @@ body {
 .tower-base {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  border: 1px solid rgba(185, 28, 28, 0.4);
+  background: radial-gradient(circle at center, rgba(30, 0, 0, 0.9), rgba(10, 0, 0, 0.7));
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tower-core {
-  border-radius: 50%;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: pulseGlow 2s infinite ease-in-out;
+  animation: pulseGlow 3s infinite ease-in-out;
 }
 
 .tower-ring {
   position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 1px dashed currentColor;
-  opacity: 0.5;
-  animation: spin 8s linear infinite;
+  inset: -6px;
+  border-radius: 0;
+  border: 1px solid currentColor;
+  opacity: 0.6;
+  animation: spin 15s linear infinite;
 }
 
 .tower-ring-reverse {
   position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  border: 1px dotted currentColor;
-  opacity: 0.3;
-  animation: spin 12s linear infinite reverse;
+  inset: -10px;
+  border-radius: 0;
+  border: 1px dashed currentColor;
+  opacity: 0.4;
+  animation: spin 20s linear infinite reverse;
 }
 
 /* Path SVG Styling */
 .path-trench {
-  stroke: rgba(255, 255, 255, 0.05);
-  stroke-width: 40;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 44;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   fill: none;
 }
 
 .path-core {
-  stroke: rgba(139, 92, 246, 0.6);
-  stroke-width: 20;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: rgba(153, 27, 27, 0.5);
+  stroke-width: 24;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   fill: none;
-  filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.8));
+  filter: drop-shadow(0 0 10px rgba(185, 28, 28, 0.7));
 }
 
 .path-energy {
-  stroke: rgba(255, 255, 255, 0.8);
-  stroke-width: 6;
-  stroke-dasharray: 10 30;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: rgba(220, 38, 38, 0.6);
+  stroke-width: 4;
+  stroke-dasharray: 10 20;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
   fill: none;
-  animation: dashFlow 1s linear infinite;
+  animation: dashFlow 2s linear infinite;
 }
 
 /* Enemy Styling */
 .enemy-core {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  box-shadow: 0 0 15px currentColor;
+  border-radius: 2px;
+  box-shadow: 0 0 10px currentColor;
   position: relative;
   overflow: hidden;
+  transform: rotate(45deg);
 }
 
 .enemy-core::after {
   content: '';
   position: absolute;
-  inset: 2px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  inset: 3px;
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.7);
 }

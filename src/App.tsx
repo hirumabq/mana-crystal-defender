@@ -55,8 +55,8 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
   const [selectedTowerId, setSelectedTowerId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(getMuted());
   const [selectedSkill, setSelectedSkill] = useState<ActiveSkillType | null>(null);
-  const { gameState, enemies, towers, attackEffects, gameSpeed, skillCooldownsRef, globalFreezeTimerRef, setGameSpeed, startWave, placeTower, sellTower, upgradeTower, evolveTower, setTowerTargeting, useSkill, getPointOnPath, saveDataRef } = useGameLoop(stageIndex);
-  const { t } = useI18n();
+  const { gameState, enemies, towers, attackEffects, gameSpeed, skillCooldownsRef, globalFreezeTimerRef, setGameSpeed, startWave, placeTower, sellTower, upgradeTower, evolveTower, setTowerTargeting, useSkill, getPointOnPath, saveDataRef, waveRewards, selectReward, globalBuffs } = useGameLoop(stageIndex);
+  const { t, lang } = useI18n();
   const PATH_POINTS = MAP_STAGES[stageIndex];
 
   const handleGridClick = (x: number, y: number) => {
@@ -80,7 +80,7 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
   return (
     <div style={{
       width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column',
-      background: `radial-gradient(circle at center, rgb(30, 27, 75), rgb(2, 6, 23))`,
+      background: `radial-gradient(circle at center, #1a0505, #050505)`,
     }}>
 
       {/* HEADER HUD */}
@@ -154,9 +154,9 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
       {/* GAME BOARD BATTLEFIELD */}
       <div style={{
         flex: 1, position: 'relative', margin: '8px 16px', borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden', border: '2px solid rgba(139, 92, 246, 0.2)',
-        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
-        minHeight: '200px'
+        overflow: 'hidden', border: '1px solid rgba(185, 28, 28, 0.4)',
+        background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(8px)',
+        minHeight: '200px', boxShadow: 'inset 0 0 50px rgba(0,0,0,0.8)'
       }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -229,8 +229,8 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
                   key={`red-${i}`}
                   x1={`${p.x * 100}%`} y1={`${p.y * 100}%`}
                   x2={`${PATH_POINTS[i + 1].x * 100}%`} y2={`${PATH_POINTS[i + 1].y * 100}%`}
-                  stroke="#ef4444" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round"
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.8))' }}
+                  stroke="#991b1b" strokeWidth="8" strokeLinejoin="miter" strokeLinecap="square"
+                  style={{ filter: 'drop-shadow(0 0 8px rgba(185, 28, 28, 0.8))' }}
                 />
               ))}
 
@@ -402,149 +402,20 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
               ) : null;
             })}
 
-            {/* Crystal at End */}
+            {/* Dark Crystal at End */}
             <div style={{
               position: 'absolute', right: '0%', bottom: '25%', transform: 'translate(50%, 50%)',
-              width: '60px', height: '100px', background: 'rgba(139, 92, 246, 0.4)',
-              border: '4px solid #8b5cf6', boxShadow: '0 0 30px #8b5cf6',
+              width: '60px', height: '100px', background: 'rgba(153, 27, 27, 0.4)',
+              border: '2px solid #b91c1c', boxShadow: '0 0 30px #991b1b',
               clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
               zIndex: 5
             }}>
-              <div style={{ position: 'absolute', inset: '10%', background: '#8b5cf6', clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }} />
+              <div style={{ position: 'absolute', inset: '10%', background: 'linear-gradient(to bottom, #7f1d1d, #450a0a)', clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }} />
             </div>
 
             {/* Win/Loss Screen */}
 
-            {/* Tower Selection UI */}
-            <AnimatePresence>
-              {selectedTowerId && (
-                <motion.div
-                  key={`stats-${selectedTowerId}`}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="glass-panel"
-                  style={{
-                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                    width: '300px', padding: '24px', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '16px',
-                    pointerEvents: 'auto'
-                  }}
-                >
-                  {(() => {
-                    const st = towers.find(t => t.id === selectedTowerId);
-                    if (!st) {
-                      return null;
-                    }
-                    const Icon = TOWER_INFO[st.type].icon;
 
-                    const maxLevel = 3;
-                    const canEvolve = st.level >= maxLevel && ['fire', 'ice', 'thunder'].includes(st.type);
-                    const upgCost = 50 * Math.pow(2, st.level - 1);
-                    const canAffordUpg = gameState.mana >= upgCost;
-                    const evoCost = 250;
-                    const canAffordEvo = gameState.mana >= evoCost;
-
-                    const getEvolutions = (type: TowerType): TowerType[] => {
-                      if (type === 'fire') return ['volcano', 'magma'];
-                      if (type === 'ice') return ['blizzard', 'frostbite'];
-                      if (type === 'thunder') return ['chain', 'sniper'];
-                      return [];
-                    };
-
-                    return (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: TOWER_INFO[st.type].color, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                            <Icon size={24} /> {t(st.type)}
-                          </div>
-                          <button onClick={() => setSelectedTowerId(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
-                            <X size={24} />
-                          </button>
-                        </div>
-
-                        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <p style={{ margin: 0 }}>{st.level >= maxLevel && !canEvolve ? t('maxLevelReached') : t('level', st.level)}</p>
-                          </div>
-                          <p style={{ margin: '0 0 4px 0' }}>{t('damage', st.damage)}</p>
-                          <p style={{ margin: '0 0 4px 0' }}>{t('range', (st.range * 100).toFixed(0))}</p>
-                          <p style={{ margin: '0 0 0 0' }}>{t('fireRate', (1000 / st.fireRate).toFixed(1))}</p>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
-                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{t('targetPriority')}:</span>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {(['first', 'last', 'strongest', 'weakest'] as TargetPriority[]).map(p => (
-                              <button
-                                key={p}
-                                onClick={() => setTowerTargeting(st.id, p)}
-                                style={{
-                                  flex: 1, padding: '4px 2px', borderRadius: '4px', border: 'none', cursor: 'pointer',
-                                  fontSize: '0.7rem', fontWeight: 'bold',
-                                  background: st.targeting === p ? '#3b82f6' : 'rgba(255,255,255,0.1)',
-                                  color: st.targeting === p ? 'white' : '#94a3b8',
-                                  transition: 'background 0.2s'
-                                }}
-                              >
-                                {t(`target_${p}`)}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {canEvolve ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', background: 'rgba(255,215,0,0.1)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.3)' }}>
-                            <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem', color: '#fde047', textAlign: 'center' }}>{t('evolutionChoose')} ({evoCost} Mana)</p>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              {getEvolutions(st.type).map(evo => (
-                                <button
-                                  key={evo}
-                                  onClick={() => evolveTower(st.id, evo)}
-                                  disabled={!canAffordEvo}
-                                  style={{
-                                    flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: canAffordEvo ? 'pointer' : 'not-allowed',
-                                    background: canAffordEvo ? TOWER_INFO[evo].color : '#374151', color: canAffordEvo ? 'white' : 'rgba(255,255,255,0.4)',
-                                    fontWeight: 'bold', fontSize: '0.8rem', transition: 'all 0.2s'
-                                  }}
-                                >
-                                  {t(evo)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                            <button
-                              onClick={() => { upgradeTower(st.id); }}
-                              disabled={!canAffordUpg || st.level >= maxLevel}
-                              style={{
-                                flex: 1, padding: '12px', borderRadius: '8px', border: 'none',
-                                background: (canAffordUpg && st.level < maxLevel) ? '#3b82f6' : '#374151',
-                                color: (canAffordUpg && st.level < maxLevel) ? 'white' : 'rgba(255,255,255,0.4)',
-                                fontWeight: 'bold', cursor: (canAffordUpg && st.level < maxLevel) ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
-                              }}
-                            >
-                              {st.level >= maxLevel ? t('maxLevel') : `${t('upgrade')} (${upgCost})`}
-                            </button>
-
-                            <button
-                              onClick={() => { sellTower(st.x, st.y); setSelectedTowerId(null); }}
-                              style={{
-                                flex: 1, padding: '12px', borderRadius: '8px', border: 'none',
-                                background: '#ef4444', color: 'white',
-                                fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s'
-                              }}
-                            >
-                              {t('sell', 50)}
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {(gameState.isGameOver || gameState.isVictory) && (
               <motion.div
@@ -557,32 +428,222 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
                   backdropFilter: 'blur(10px)'
                 }}
               >
-                <h1 style={{
-                  fontSize: '4rem', color: gameState.isVictory ? '#3b82f6' : '#ef4444',
-                  textShadow: `0 0 20px ${gameState.isVictory ? '#3b82f6' : '#ef4444'}`,
-                  marginBottom: '20px', letterSpacing: '4px'
+                <h1 className="title-display" style={{
+                  fontSize: '5rem', color: gameState.isVictory ? '#fbbf24' : '#b91c1c',
+                  textShadow: `0 0 20px ${gameState.isVictory ? '#fbbf24' : '#ef4444'}`,
+                  marginBottom: '20px', letterSpacing: '8px', textAlign: 'center',
+                  background: `linear-gradient(to bottom, ${gameState.isVictory ? '#fef3c7, #f59e0b' : '#fca5a5, #7f1d1d'})`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 }}>
                   {gameState.isVictory ? t('victory') : t('crystalShattered')}
                 </h1>
-                <p style={{ color: 'white', fontSize: '1.2rem', marginBottom: '30px', textAlign: 'center' }}>
+                <p className="title-display" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem', marginBottom: '30px', textAlign: 'center', letterSpacing: '4px' }}>
                   {gameState.isVictory ? t('victoryDesc') : t('defeatDesc')}
                   <br /><br />
-                  <span style={{ color: '#8b5cf6', fontWeight: 'bold' }}>{t('shardsAcquired', gameState.sessionPoints)}</span>
+                  <span style={{ color: '#b91c1c', fontWeight: 'bold' }}>{t('shardsAcquired', gameState.sessionPoints)}</span>
                 </p>
-                <button onClick={() => window.location.reload()} style={{
+                <button onClick={() => window.location.reload()} className="glass-panel title-display" style={{
                   padding: '16px 32px', fontSize: '1.2rem',
-                  background: 'transparent', border: '2px solid white',
-                  color: 'white', borderRadius: '8px', cursor: 'pointer',
-                  fontWeight: 'bold', textTransform: 'uppercase'
+                  border: '1px solid rgba(185, 28, 28, 0.5)',
+                  color: 'white', cursor: 'pointer',
+                  fontWeight: 'bold', letterSpacing: '2px',
+                  background: 'linear-gradient(135deg, rgba(153, 27, 27, 0.4), rgba(69, 10, 10, 0.6))'
                 }}>
                   {t('returnToForge')}
                 </button>
               </motion.div>
             )}
 
+            {/* WAVE REWARDS MODAL */}
+            {waveRewards && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                style={{
+                  position: 'absolute', inset: 0,
+                  background: 'rgba(0,0,0,0.85)', zIndex: 110,
+                  display: 'flex', flexDirection: 'column',
+                  justifyContent: 'center', alignItems: 'center',
+                  backdropFilter: 'blur(10px)',
+                  padding: '24px'
+                }}
+              >
+                <h2 className="title-display" style={{ color: '#fbbf24', fontSize: '2rem', marginBottom: '8px', textShadow: '0 0 10px rgba(251, 191, 36, 0.5)' }}>
+                  {t('reward_select')}
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px' }}>Choose a blessing for the battles ahead.</p>
+
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {waveRewards.map((reward, i) => (
+                    <motion.button
+                      key={reward.id}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                      onClick={() => selectReward(reward)}
+                      className="glass-panel"
+                      whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(251, 191, 36, 0.4)' }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        padding: '24px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+                        width: '220px',
+                        cursor: 'pointer',
+                        border: '1px solid rgba(251, 191, 36, 0.3)',
+                        background: 'linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(10, 10, 10, 0.95))'
+                      }}
+                    >
+                      <div style={{
+                        width: '60px', height: '60px', borderRadius: '50%',
+                        background: 'rgba(251, 191, 36, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fbbf24', fontSize: '2rem'
+                      }}>
+                        {reward.type.includes('crystal') ? <Gem size={32} /> : reward.type.includes('coin') || reward.type.includes('income') ? <Coins size={32} /> : reward.type.includes('sp') ? <Sparkles size={32} /> : <Swords size={32} />}
+                      </div>
+                      <div style={{ color: 'white', fontWeight: 'bold', fontSize: '1.1rem', textAlign: 'center', minHeight: '48px', display: 'flex', alignItems: 'center' }}>
+                        {/* We can use translation by mapping the description key */}
+                        {t(reward.descriptionKey as any, reward.value)}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Tower Selection UI (Moved outside battlefield to prevent clipping) */}
+      <AnimatePresence>
+        {selectedTowerId && (
+          <motion.div
+            key={`stats-${selectedTowerId}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="glass-panel"
+            style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              width: '320px', padding: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '16px',
+              pointerEvents: 'auto', maxHeight: '90dvh', overflowY: 'auto',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)'
+            }}
+          >
+            {(() => {
+              const st = towers.find(t => t.id === selectedTowerId);
+              if (!st) {
+                return null;
+              }
+              const Icon = TOWER_INFO[st.type].icon;
+
+              const maxLevel = 3;
+              const canEvolve = st.level >= maxLevel && ['fire', 'ice', 'thunder'].includes(st.type);
+              const upgCost = 50 * Math.pow(2, st.level - 1);
+              const canAffordUpg = gameState.mana >= upgCost;
+              const evoCost = 250;
+              const canAffordEvo = gameState.mana >= evoCost;
+
+              const getEvolutions = (type: TowerType): TowerType[] => {
+                if (type === 'fire') return ['volcano', 'magma'];
+                if (type === 'ice') return ['blizzard', 'frostbite'];
+                if (type === 'thunder') return ['chain', 'sniper'];
+                return [];
+              };
+
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: TOWER_INFO[st.type].color, fontWeight: 'bold', fontSize: '1.2rem' }}>
+                      <Icon size={24} /> {t(st.type)}
+                    </div>
+                    <button onClick={() => setSelectedTowerId(null)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <p style={{ margin: 0 }}>{st.level >= maxLevel && !canEvolve ? t('maxLevelReached') : t('level', st.level)}</p>
+                    </div>
+                    <p style={{ margin: '0 0 4px 0' }}>{t('damage', st.damage)}</p>
+                    <p style={{ margin: '0 0 4px 0' }}>{t('range', (st.range * 100).toFixed(0))}</p>
+                    <p style={{ margin: '0 0 0 0' }}>{t('fireRate', (1000 / st.fireRate).toFixed(1))}</p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{t('targetPriority')}:</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {(['first', 'last', 'strongest', 'weakest'] as TargetPriority[]).map(p => (
+                        <button
+                          key={p}
+                          onClick={() => setTowerTargeting(st.id, p)}
+                          style={{
+                            flex: 1, padding: '4px 2px', borderRadius: '4px', border: 'none', cursor: 'pointer',
+                            fontSize: '0.7rem', fontWeight: 'bold',
+                            background: st.targeting === p ? '#3b82f6' : 'rgba(255,255,255,0.1)',
+                            color: st.targeting === p ? 'white' : '#94a3b8',
+                            transition: 'background 0.2s'
+                          }}
+                        >
+                          {t(`target_${p}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {canEvolve ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', background: 'rgba(255,215,0,0.1)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.3)' }}>
+                      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem', color: '#fde047', textAlign: 'center' }}>{t('evolutionChoose')} ({evoCost} Mana)</p>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {getEvolutions(st.type).map(evo => (
+                          <button
+                            key={evo}
+                            onClick={() => evolveTower(st.id, evo)}
+                            disabled={!canAffordEvo}
+                            style={{
+                              flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: canAffordEvo ? 'pointer' : 'not-allowed',
+                              background: canAffordEvo ? TOWER_INFO[evo].color : '#374151', color: canAffordEvo ? 'white' : 'rgba(255,255,255,0.4)',
+                              fontWeight: 'bold', fontSize: '0.8rem', transition: 'all 0.2s'
+                            }}
+                          >
+                            {t(evo)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                      <button
+                        onClick={() => { upgradeTower(st.id); }}
+                        disabled={!canAffordUpg || st.level >= maxLevel}
+                        style={{
+                          flex: 1, padding: '12px', borderRadius: '8px', border: 'none',
+                          background: (canAffordUpg && st.level < maxLevel) ? '#3b82f6' : '#374151',
+                          color: (canAffordUpg && st.level < maxLevel) ? 'white' : 'rgba(255,255,255,0.4)',
+                          fontWeight: 'bold', cursor: (canAffordUpg && st.level < maxLevel) ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
+                        }}
+                      >
+                        {st.level >= maxLevel ? t('maxLevel') : `${t('upgrade')} (${upgCost})`}
+                      </button>
+
+                      <button
+                        onClick={() => { sellTower(st.x, st.y); setSelectedTowerId(null); }}
+                        style={{
+                          flex: 1, padding: '12px', borderRadius: '8px', border: 'none',
+                          background: '#ef4444', color: 'white',
+                          fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >
+                        {t('sell', 50)}
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* SKILL BAR */}
       <div className="hide-scrollbar" style={{ padding: '0 16px', display: 'flex', gap: '12px', zIndex: 10, marginBottom: '8px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -677,13 +738,13 @@ function GameScreen({ stageIndex, onBack }: { stageIndex: number, onBack: () => 
         margin: '8px 16px 16px 16px', padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center',
         zIndex: 10
       }}>
-        {!gameState.isPlaying ? (
-          <button onClick={startWave} style={{
+        {!gameState.isPlaying && !waveRewards ? (
+          <button onClick={startWave} className="title-display" style={{
             padding: '12px 24px', borderRadius: 'var(--radius-lg)',
-            background: 'linear-gradient(to right, #8b5cf6, #3b82f6)', color: 'white', border: 'none',
-            fontWeight: 'bold', fontSize: '1.2rem',
+            background: 'linear-gradient(to right, #7f1d1d, #450a0a)', color: 'white', border: '1px solid #b91c1c',
+            fontWeight: 'bold', fontSize: '1.2rem', letterSpacing: '2px',
             display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.5)'
+            boxShadow: '0 4px 15px rgba(153, 27, 27, 0.5)'
           }}>
             <Play fill="white" /> {t('summonWave', gameState.wave + 1, gameState.totalEnemies)}
           </button>

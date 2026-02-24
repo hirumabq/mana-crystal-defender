@@ -211,6 +211,17 @@ const translations = {
         bestiaryOrcDesc: "Tank unit. Very high health, but moves slowly.",
         bestiaryBoss: "Boss",
         bestiaryBossDesc: "Massive threat. Spawns every 5 waves with extreme health. Yields high mana.",
+
+        reward_desc_heal_crystal: "Heal Crystal by +30 HP",
+        reward_desc_max_hp_crystal: "Max Crystal HP +10 & Heal",
+        reward_desc_coin_boost: "Gain Mana instantly (+{0})",
+        reward_desc_income_boost: "End of wave Mana +50 permanently",
+        reward_desc_tower_damage: "All Towers Damage +10% permanently",
+        reward_desc_tower_speed: "All Towers Speed +10% permanently",
+        reward_desc_next_wave_damage_boost: "Next Wave: All Towers Damage x2",
+        reward_desc_next_wave_range_boost: "Next Wave: All Towers Range x1.5",
+        reward_desc_sp_boost: "Gain 100 SP instantly",
+        reward_select: "SELECT REWARD",
     },
     ja: {
         title: "マナ・クリスタル",
@@ -420,10 +431,23 @@ const translations = {
         bestiaryOrcDesc: "高耐久ユニット。体力は非常に高いが、移動速度は遅い。",
         bestiaryBoss: "ボス",
         bestiaryBossDesc: "巨大な脅威。5ウェーブごとに襲来し、極めて高い体力を持つ。倒すと大量のマナを落とす。",
+
+        reward_desc_heal_crystal: "クリスタルの耐久値を30回復",
+        reward_desc_max_hp_crystal: "クリスタルの最大耐久値+10＆回復",
+        reward_desc_coin_boost: "即座にマナを獲得 (+{0})",
+        reward_desc_income_boost: "毎ウェーブの獲得マナが永続的に+50",
+        reward_desc_tower_damage: "全タワーの攻撃力が永続的に+10%",
+        reward_desc_tower_speed: "全タワーの攻撃速度が永続的に+10%",
+        reward_desc_next_wave_damage_boost: "次WAVE限定：全タワーの攻撃力2倍",
+        reward_desc_next_wave_range_boost: "次WAVE限定：全タワーの射程1.5倍",
+        reward_desc_sp_boost: "即座に100 SPを獲得",
+        reward_select: "報酬を選択",
     }
 };
 
 type TransKey = keyof typeof translations.en;
+// allow string to be passed loosely
+export type Translations = typeof translations.en;
 
 interface I18nContextProps {
     lang: Lang;
